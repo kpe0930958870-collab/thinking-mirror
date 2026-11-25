@@ -221,22 +221,27 @@ const P=[
 {id:1,title:'กำไรร้านส้มตำ',text:'แม่ค้าขายส้มตำจานละ 45 บาท วันนี้ขายได้ 38 จาน ต้นทุนรวมทั้งวัน 920 บาท แม่ค้าได้กำไรเท่าไร',ans:'790',unit:'บาท',
  steps:['เข้าใจว่ากำไร = รายรับ − ต้นทุน','หารายรับทั้งหมด','นำรายรับลบต้นทุนรวม'],
  hints:['โจทย์ถามหาอะไร แล้วกำไรคำนวณจากอะไรกับอะไร ลองบอกมาก่อนว่าต้องหาอะไรบ้าง','ลองดูอีกที 920 บาทเป็นต้นทุน "รวมทั้งวัน" ไม่ใช่ต้นทุนต่อจานนะ','ถ้าขายขนม 3 ชิ้น ชิ้นละ 10 บาท ต้นทุนรวม 12 บาท จะกำไรเท่าไร ลองคิดแบบเดียวกันกับโจทย์นี้','วิธีคิด: รายรับ = ราคาต่อจาน × จำนวนจาน แล้วกำไร = รายรับ − ต้นทุนรวม ลองคำนวณเองทีละขั้น'],
+ keys:[[/กำไร|รายรับ/],[/45/,/38/],[/920/]],
  right:['กำไร = รายรับ ลบ ต้นทุน','45 × 38 = 1710','1710 − 920 = 790 บาท'],wrong:['45 − 920 ติดลบ งง','920 ÷ 38 ได้ประมาณ 24']},
 {id:2,title:'นักเรียนหญิงในห้อง',text:'ห้องเรียนมีนักเรียน 36 คน เป็นนักเรียนชาย 4/9 ของทั้งห้อง ห้องนี้มีนักเรียนหญิงกี่คน',ans:'20',unit:'คน',
  steps:['รู้ว่า 4/9 คือสัดส่วนนักเรียนชาย','หาจำนวนนักเรียนชาย','หาจำนวนนักเรียนหญิง'],
  hints:['โจทย์ถามหาเด็กชายหรือเด็กหญิง แล้ว 4/9 เป็นข้อมูลของใคร','ถ้าหา 4/9 ของ 36 ได้แล้ว ตัวเลขนั้นใช่สิ่งที่โจทย์ถามหรือยัง ลองอ่านคำถามอีกรอบ','ถ้ามีนักเรียน 10 คน เป็นชาย 2/5 จะมีชายกี่คน และหญิงกี่คน','วิธีคิด: หาจำนวนชายจาก 36 × 4/9 แล้วนำจำนวนทั้งห้องลบจำนวนชาย หรือใช้สัดส่วนที่เหลือ 5/9 ก็ได้'],
+ keys:[[/ชาย|4\/9|4 ส่วน 9/],[/36/,/4\/9|4 ส่วน 9|16/],[/หญิง|5\/9|5 ส่วน 9|36\s*[-−]|ลบ/]],
  right:['4/9 คือผู้ชาย','36 × 4/9 = 16 คน','36 − 16 = 20 คน'],wrong:['ตอบ 16 คน','36 ÷ 4 = 9']},
 {id:3,title:'เกมทายเลขในใจ',text:'คิดจำนวนหนึ่งไว้ในใจ นำไปคูณ 3 แล้วบวก 7 ได้ผลลัพธ์ 52 จำนวนที่คิดไว้คือเท่าไร',ans:'15',unit:'',
  steps:['ตั้งสมการหรือวางแผนคิดย้อนกลับ','ย้อนการบวก 7','ย้อนการคูณ 3'],
  hints:['ถ้าเรียกจำนวนนั้นว่า x จะเขียนสิ่งที่เกิดขึ้นเป็นประโยคคณิตศาสตร์ได้อย่างไร','ถ้าจะคิดย้อนกลับ ต้องย้อนจากขั้นสุดท้ายก่อน ขั้นสุดท้ายที่ทำกับจำนวนนั้นคืออะไร','ถ้าคิดเลขในใจ คูณ 2 แล้วบวก 1 ได้ 9 จำนวนนั้นคือเท่าไร ลองย้อนดู','วิธีคิด: 3x + 7 = 52 ย้อนการบวก 7 ด้วยการลบ 7 ทั้งสองข้าง แล้วย้อนการคูณ 3 ด้วยการหาร 3'],
+ keys:[[/x|ย้อน|สมการ|สมมติ/],[/52\s*[-−]\s*7|ลบ\s*7|ลบออก\s*7|45/],[/÷\s*3|หาร\s*(ด้วย\s*)?3|\/\s*3/]],
  right:['3x + 7 = 52','52 − 7 = 45','45 ÷ 3 = 15'],wrong:['52 ÷ 3 แล้วลบ 7','(52 + 7) ÷ 3']},
 {id:4,title:'ปากกากับดินสอ',text:'ปากกาด้ามละ 12 บาท ดินสอแท่งละ 5 บาท ต้นซื้อทั้งสองอย่างรวม 10 ชิ้น จ่ายเงินไป 92 บาท ต้นซื้อปากกากี่ด้าม',ans:'6',unit:'ด้าม',
  steps:['กำหนดตัวแปรจำนวนปากกา','เขียนจำนวนดินสอและสมการราคารวม','แก้สมการ'],
  hints:['ถ้าซื้อปากกา p ด้าม จะซื้อดินสอกี่แท่ง','ลองเช็กว่าราคารวม 92 บาท ต้องคิดทั้งราคาปากกาและราคาดินสอรวมกัน','ถ้าซื้อปากกา 1 ด้ามกับดินสอ 9 แท่ง จะจ่ายกี่บาท ลองเพิ่มปากกาทีละด้ามแล้วสังเกตว่าราคาเพิ่มขึ้นทีละเท่าไร','วิธีคิด: 12p + 5(10 − p) = 92 กระจายวงเล็บ รวมพจน์ที่มี p แล้วแก้สมการ'],
+ keys:[[/[a-zA-Zก-๙]\s*ด้าม|ตัวแปร|สมมติ|\bp\b|\bx\b/],[/10\s*[-−]\s*[a-z]|5\s*\(|12\s*[a-z]|12\s*[×x*]/],[/7\s*[a-z]|42/]],
  right:['ปากกา p ดินสอ 10 − p','12p + 5(10 − p) = 92','7p = 42 ได้ p = 6 ด้าม'],wrong:['92 ÷ 12','12p + 5p = 92']},
 {id:5,title:'รถตู้ไปขอนแก่น',text:'รถตู้วิ่งระยะทาง 180 กิโลเมตร ใช้เวลา 2 ชั่วโมง 30 นาที อัตราเร็วเฉลี่ยเป็นกี่กิโลเมตรต่อชั่วโมง',ans:'72',unit:'กม./ชม.',
  steps:['รู้ว่าอัตราเร็ว = ระยะทาง ÷ เวลา','แปลง 2 ชม. 30 นาที เป็นชั่วโมง','คำนวณอัตราเร็ว'],
  hints:['คำว่า "กิโลเมตรต่อชั่วโมง" บอกอะไรเราเกี่ยวกับวิธีคำนวณ','30 นาทีเท่ากับ 0.30 ชั่วโมงจริงไหม ลองนึกว่า 1 ชั่วโมงมีกี่นาที','ถ้าวิ่ง 100 กม. ใช้เวลา 2 ชั่วโมง อัตราเร็วเท่าไร แล้วถ้าใช้เวลา 2 ชั่วโมงครึ่งจะเร็วขึ้นหรือช้าลง','วิธีคิด: เปลี่ยนเวลาเป็นชั่วโมงทศนิยมก่อน (30 นาทีคือครึ่งชั่วโมง) แล้วนำระยะทางหารด้วยเวลา'],
+ keys:[[/ระยะทาง|หาร|÷|\//],[/2\.5|2 ครึ่ง|สองชั่วโมงครึ่ง|150 นาที|ครึ่งชั่วโมง|0\.5/],[/180\s*[÷\/]\s*2\.5|180\s*หาร(ด้วย)?\s*2\.5/]],
  right:['อัตราเร็ว = ระยะทาง ÷ เวลา','2 ชม. 30 นาที = 2.5 ชม.','180 ÷ 2.5 = 72 กม./ชม.'],wrong:['180 ÷ 2.30 ได้ 78.26','180 ÷ 230']}
 ];
 const RUNG=['ถามให้สังเกต','ชี้จุดที่ควรดู','ตัวอย่างที่ง่ายกว่า','อธิบายวิธีคิด'];
@@ -255,6 +260,7 @@ let cur=P[0],sess=null,busy=false,pasted=false,S=null,lastErr='';
 
 const hasAns=(t,a)=>new RegExp('(^|[^0-9.])'+a.replace('.','\\.')+'([^0-9]|$)').test(String(t).replace(/,/g,''));
 
+function keyStep(p,text,from){let st=from;const t=String(text).replace(/,/g,'');p.keys.forEach((g,i)=>{if(g.every(r=>r.test(t)))st=Math.max(st,i)});return st}
 function score(s){
   const out=[];let n=100;
   if(s.maxLvl>0){out.push(['ใช้คำใบ้ถึงขั้น '+s.maxLvl,-12*s.maxLvl]);n-=12*s.maxLvl}
@@ -311,13 +317,31 @@ function setStatus(){
   $('aiText').textContent=e==='gemini'?'AI: '+cfg.model.replace('models/',''):e==='claude'?'AI: Claude':'ยังไม่ได้ใส่คีย์ AI';
   $('aiBtn').title=lastErr||'ตั้งค่า AI';
 }
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
+function thaiErr(status,msg){
+  if(status===503||/overload|high demand|unavailable/i.test(msg))return 'Gemini มีผู้ใช้จำนวนมากชั่วคราว';
+  if(status===429||/quota|rate/i.test(msg))return 'ใช้โควตาฟรีของคีย์นี้ครบแล้วชั่วคราว';
+  if(status===400&&/key/i.test(msg)||status===403)return 'API Key ไม่ถูกต้องหรือไม่มีสิทธิ์';
+  return msg||('HTTP '+status);
+}
 async function gemini(prompt){
-  const r=await fetch(API+cfg.model+':generateContent',{method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':cfg.key},
+  const models=[cfg.model,...(cfg.models||[]).filter(m=>m!==cfg.model).sort((a,b)=>rank(b)-rank(a)).slice(0,2)];
+  let last;
+  for(const m of models){
+    for(let i=0;i<2;i++){
+      try{const t=await geminiOnce(prompt,m);if(m!==cfg.model){lastErr='';}return t}
+      catch(e){last=e;if(e.status&&![429,500,503,504].includes(e.status))throw e;await wait(1200*(i+1))}
+    }
+  }
+  throw last;
+}
+async function geminiOnce(prompt,model){
+  const r=await fetch(API+model+':generateContent',{method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':cfg.key},
     body:JSON.stringify({contents:[{role:'user',parts:[{text:prompt}]}],generationConfig:{responseMimeType:'application/json',temperature:.4}})});
   const j=await r.json().catch(()=>({}));
-  if(!r.ok)throw new Error((j.error&&j.error.message)||('HTTP '+r.status));
+  if(!r.ok){const e=new Error(thaiErr(r.status,(j.error&&j.error.message)||''));e.status=r.status;throw e}
   const parts=(((j.candidates||[])[0]||{}).content||{}).parts||[];
-  return parts.map(p=>p.text||'').join('');
+  return parts.filter(p=>!p.thought).map(p=>p.text||'').join('');
 }
 function parse(v){
   if(v&&typeof v==='object')return v;
@@ -336,7 +360,7 @@ async function askAI(prompt){
   }catch(err){
     if(err&&err.code==='not_granted')S=null;
     lastErr='เชื่อมต่อ AI ไม่ได้: '+(err&&err.message||err);setStatus();
-    if(sess)sess.msgs.push({who:'n',text:lastErr+' (ใช้คำใบ้สำเร็จรูปแทนชั่วคราว)',t:Date.now()});
+    if(sess)sess.msgs.push({who:'n',text:lastErr+' ครูสำรองจะตรวจให้แทนชั่วคราว',t:Date.now()});
     return null;
   }
 }
@@ -382,8 +406,13 @@ function offline(p,s,text){
   if(solved)reply='เก่งมาก ได้คำตอบที่ถูกแล้ว ขั้นต่อไป ลองอธิบายให้เพื่อนฟังหน่อยว่าทำยังไงถึงได้คำตอบนี้';
   else if(cat==='ask_answer')reply='ครูบอกคำตอบให้ไม่ได้นะ แต่เราคิดไปด้วยกันได้\n'+p.hints[s.lvl];
   else reply=p.hints[s.lvl];
-  let step=s.step;p.right.forEach((r,i)=>{const n=(r.match(/[0-9.]+/g)||[]).pop();if(n&&hasAns(text,n))step=Math.max(step,i)});
-  if(!solved&&step>s.step&&cat==='think')reply='ดีมาก ขั้นนี้ถูกต้องแล้ว ขั้นต่อไปต้องทำอะไรต่อ';
+  let step=keyStep(p,text,s.step);p.right.forEach((r,i)=>{const n=(r.match(/[0-9.]+/g)||[]).pop();if(n&&hasAns(text,n))step=Math.max(step,i)});
+  const last=p.steps.length-1;
+  if(!solved&&cat!=='ask_answer'){
+    if(step>=last)reply='วิธีคิดของเธอถูกครบทุกขั้นแล้ว เก่งมาก! ลองคำนวณออกมาเป็นตัวเลขคำตอบสุดท้าย'+(p.unit?'พร้อมหน่วย ('+p.unit+')':'')+'ดูนะ';
+    else if(step>s.step)reply='ถูกต้อง ขั้น "'+p.steps[step]+'" ทำได้แล้ว ต่อไปต้องทำอะไรต่อ';
+    else{const prev=[...s.msgs].reverse().find(m=>m.who==='a');if(prev&&prev.text===reply)reply='ลองเขียนวิธีคิดเป็นขั้น ๆ ว่าเอาตัวเลขไหนทำอะไรกับตัวเลขไหน ถ้าติดจริง ๆ กด "ขอคำใบ้" ได้เลย'}
+  }
   return {reply,category:cat,step:solved?p.steps.length-1:step,stuck:solved?-1:Math.min(step+1,p.steps.length-1),solved};
 }
 async function send(text){
@@ -406,7 +435,7 @@ async function send(text){
   if(!solved&&hasAns(reply,p.ans))reply=p.hints[s.lvl]; // กันคำตอบหลุด
   m.cat=r.category;
   if(r.category==='think')s.since++;
-  const st=parseInt(r.step,10);if(!isNaN(st)&&st>s.step)s.step=Math.min(st,p.steps.length-1);
+  let st=parseInt(r.step,10);if(isNaN(st))st=-1;st=Math.max(st,keyStep(p,text,-1));if(st>s.step)s.step=Math.min(st,p.steps.length-1);
   const sk=parseInt(r.stuck,10);if(!isNaN(sk)&&sk>=0&&sk<p.steps.length&&!solved)s.stuck[sk]=(s.stuck[sk]||0)+1;
   s.msgs.push({who:'a',text:reply,t:Date.now(),lvl:s.lvl});
   if(solved){s.solved=true;s.step=p.steps.length-1;s.mode='explain';s.solvedAt=Date.now();
@@ -503,7 +532,7 @@ async function testKey(){
     const list=(j.models||[]).filter(m=>(m.supportedGenerationMethods||[]).includes('generateContent')&&/gemini/.test(m.name)&&!/image|tts|audio|live|embed|vision|robotics|computer/.test(m.name)).map(m=>m.name);
     if(!list.length)throw new Error('ไม่พบโมเดลที่ใช้สร้างข้อความได้');
     const best=[...list].sort((a,b)=>rank(b)-rank(a))[0];
-    fillModels(list,list.includes(cfg.model)?cfg.model:best);
+    fillModels(list,list.includes(cfg.model)?cfg.model:best);cfg.models=list;
     msg.textContent='คีย์ใช้งานได้ พบ '+list.length+' โมเดล เลือกให้อัตโนมัติแล้ว กด "บันทึก" เพื่อใช้งาน';msg.className='msg ok';
   }catch(err){msg.textContent='ใช้คีย์นี้ไม่ได้: '+(err.message||err);msg.className='msg bad'}
   $('testBtn').disabled=false;
@@ -516,7 +545,7 @@ $('eyeBtn').addEventListener('click',e=>{const k=$('keyIn');k.type=k.type==='pas
 $('testBtn').addEventListener('click',testKey);
 $('saveBtn').addEventListener('click',()=>{const key=$('keyIn').value.trim(),model=$('modelSel').value;
   if(!key||!model){$('dlgMsg').textContent='ใส่คีย์แล้วกด "ทดสอบคีย์" ให้ผ่านก่อนบันทึก';$('dlgMsg').className='msg bad';return}
-  cfg={key,model};store(CFG,cfg);lastErr='';setStatus();$('dlgMsg').textContent='บันทึกแล้ว ครู AI พร้อมตรวจสมุด';$('dlgMsg').className='msg ok';setTimeout(closeDlg,700)});
+  cfg={key,model,models:cfg.models||[]};store(CFG,cfg);lastErr='';setStatus();$('dlgMsg').textContent='บันทึกแล้ว ครู AI พร้อมตรวจสมุด';$('dlgMsg').className='msg ok';setTimeout(closeDlg,700)});
 $('delBtn').addEventListener('click',()=>{cfg={key:'',model:''};store(CFG,cfg);$('keyIn').value='';fillModels([]);lastErr='';setStatus();$('dlgMsg').textContent='ลบคีย์ออกจากเครื่องนี้แล้ว';$('dlgMsg').className='msg'});
 
 /* ---------- routing & events ---------- */
@@ -529,7 +558,7 @@ function route(){
 window.addEventListener('hashchange',route);
 $('who').addEventListener('change',e=>{who=e.target.value.trim();store('tm_who',who);pick(cur)});
 $('toc').addEventListener('click',e=>{const b=e.target.closest('[data-p]');if(b)pick(P.find(p=>p.id===+b.dataset.p))});
-$('msg').addEventListener('paste',()=>{pasted=true});
+$('msg').addEventListener('paste',e=>{const t=(e.clipboardData&&e.clipboardData.getData('text'))||'';if(t.trim().length>=15)pasted=true});
 $('msg').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();$('form').requestSubmit()}});
 $('form').addEventListener('submit',e=>{e.preventDefault();const v=$('msg').value.trim();if(!v||busy||!sess||sess.done)return;$('msg').value='';send(v)});
 $('hintBtn').addEventListener('click',()=>{if(sess&&!busy)hint()});

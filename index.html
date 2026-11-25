@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Thinking Mirror</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&family=Mali:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* VOICE: a Thai school exercise book — calm, honest, a little hand-made
+   IDEA: student writes in blue ballpoint on ruled paper, the AI "teacher" answers in red pen in the margin
+   PICTURE: the open notebook page itself, with rubber-stamp hint ladder and a ticked solution checklist
+   COLOUR and TYPE: white paper, ruled blue lines, red margin; Sarabun (the Thai school-document face) + Mali for handwriting
+   LAYOUT: contents | notebook page | stamps; teacher view is a gradebook ledger */
+:root{color-scheme:light dark;
+--desk:light-dark(#e6e9ee,#0d0f13);--paper:light-dark(#ffffff,#171a21);--rule:light-dark(#d6e3f3,#243041);
+--margin:light-dark(#e25555,#b84a4a);--ink:light-dark(#1f2430,#e6e8ee);--mute:light-dark(#646b7a,#9aa1b0);
+--blue:light-dark(#1d3f9a,#8fb0ff);--red:light-dark(#c62828,#ff7b72);--redsoft:light-dark(#fdecec,#3a1e20);
+--green:light-dark(#1d7a4a,#5fd39a);--line:light-dark(#d9dde4,#2a2f3a);--tab:light-dark(#f4f6f9,#1e222b)}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--desk);color:var(--ink);font:17px/1.6 Sarabun,"Noto Sans Thai",system-ui,sans-serif;overflow-x:clip}
+h1,h2,h3{margin:0;line-height:1.15;font-weight:700}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer;min-height:44px;padding:0 16px;border-radius:6px;border:1.5px solid var(--ink);background:var(--paper);font-weight:600}
+button:disabled{opacity:.4;cursor:not-allowed}
+:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+.hand{font-family:Mali,Sarabun,sans-serif}
+.wrap{max-width:1260px;margin:0 auto;padding:18px max(3vw,14px) 48px}
+
+/* cover label */
+.cover{display:flex;flex-wrap:wrap;gap:14px 22px;align-items:end;justify-content:space-between;margin-bottom:16px}
+.label{background:var(--paper);border:1.5px solid var(--ink);border-radius:10px;padding:12px 18px;display:grid;gap:4px;box-shadow:4px 4px 0 var(--ink)}
+.label h1{font-size:28px;letter-spacing:.2px}
+.label h1 small{font-weight:400;font-size:16px;color:var(--mute);margin-left:8px}
+.fill{display:flex;gap:8px;align-items:baseline;font-size:16px}
+.fill input{border:0;border-bottom:2px dotted var(--mute);background:transparent;min-height:36px;padding:0 4px;width:220px;font-family:Mali,Sarabun;font-size:18px;color:var(--blue)}
+.tabs{display:flex;gap:6px;align-items:end;flex-wrap:wrap}
+.tabs a{text-decoration:none;color:var(--ink);background:var(--tab);border:1.5px solid var(--ink);border-bottom:0;border-radius:10px 10px 0 0;padding:10px 18px;font-weight:600}
+.tabs a.on{background:var(--paper);border-top:4px solid var(--red);transform:translateY(2px)}
+.aibtn{display:flex;align-items:center;gap:8px;font-size:15px}
+.dot{width:10px;height:10px;border-radius:50%;background:var(--mute);flex:none}
+.dot.on{background:var(--green)}.dot.warn{background:var(--red)}
+
+.grid{display:grid;grid-template-columns:220px minmax(0,1fr) 230px;gap:22px;align-items:start}
+.sheet{background:var(--paper);border:1.5px solid var(--ink);border-radius:4px;position:relative}
+
+/* contents */
+.toc{padding:16px 16px 10px}
+.toc h3,.side h3{font-size:16px;margin-bottom:8px}
+.toc button{display:grid;grid-template-columns:auto 1fr auto;gap:6px;align-items:baseline;width:100%;border:0;border-radius:0;background:none;padding:8px 0;text-align:left;font-weight:400;border-bottom:1px solid var(--rule);min-height:44px}
+.toc button .lead{border-bottom:2px dotted var(--line);transform:translateY(-4px)}
+.toc button.on{font-weight:700}
+.toc button.on b::before{content:"› ";color:var(--red)}
+.toc small{font-size:14px;color:var(--mute);white-space:nowrap}
+.toc small.ok{color:var(--red);font-family:Mali}
+
+/* notebook page */
+.page{min-height:640px;display:flex;flex-direction:column;
+background:linear-gradient(90deg,transparent 58px,var(--margin) 58px,var(--margin) 60px,transparent 60px),repeating-linear-gradient(var(--paper) 0 31px,var(--rule) 31px 32px);background-color:var(--paper)}
+.page::before{content:"";position:absolute;left:18px;top:40px;bottom:40px;width:12px;background:radial-gradient(circle,var(--desk) 5px,transparent 6px) 0 0/12px 64px repeat-y}
+.phead{padding:16px 22px 10px 76px}
+.phead .meta{font-size:14px;color:var(--mute)}
+.phead h2{font-size:24px;margin:2px 0 4px}
+.phead p{margin:0;font-size:18px;line-height:32px}
+.log{flex:1;padding:6px 22px 16px 76px;overflow-y:auto;max-height:520px;line-height:32px}
+.ln{position:relative;margin:0 0 0;white-space:pre-wrap;overflow-wrap:anywhere}
+.ln.s{font-family:Mali,Sarabun;color:var(--blue);font-size:19px}
+.ln.a{color:var(--red);font-size:17px;padding-left:18px;border-left:2px solid var(--red);margin:4px 0 8px}
+.ln.a::before{content:"ครู:";position:absolute;left:-64px;font-family:Mali;font-size:15px;width:44px;text-align:right}
+.ln.n{color:var(--mute);font-style:italic;font-size:16px}
+.ln .tag{font-family:Sarabun;font-size:13px;color:var(--mute);margin-left:10px;white-space:nowrap}
+.think{color:var(--mute);font-family:Mali}
+.think span{display:inline-block;animation:w 1s infinite}.think span:nth-child(2){animation-delay:.15s}.think span:nth-child(3){animation-delay:.3s}
+@keyframes w{50%{transform:translateY(-3px)}}
+@media(prefers-reduced-motion:reduce){.think span{animation:none}}
+.write{display:flex;gap:10px;flex-wrap:wrap;padding:12px 22px 16px 76px;border-top:1.5px solid var(--ink);background:var(--paper)}
+.write textarea{flex:1 1 280px;min-height:64px;max-height:160px;resize:vertical;border:0;background:repeating-linear-gradient(var(--paper) 0 31px,var(--rule) 31px 32px);line-height:32px;padding:0 2px;font-family:Mali,Sarabun;font-size:19px;color:var(--blue)}
+.write textarea::placeholder{color:var(--mute)}
+.btns{display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap}
+.ink{background:var(--blue);border-color:var(--blue);color:#fff}
+:root[data-theme=dark] .ink{color:#0d0f13}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]) .ink{color:#0d0f13}}
+.redbtn{border-color:var(--red);color:var(--red)}
+
+/* stamps + checklist */
+.side{padding:16px}
+.stamps{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px}
+.stamp{border:2px dashed var(--line);border-radius:8px;padding:8px 6px;text-align:center;font-size:13px;color:var(--mute);line-height:1.3;min-height:64px;display:grid;place-content:center;gap:2px}
+.stamp b{font-size:20px;font-family:Mali}
+.stamp.used{border:2.5px solid var(--red);color:var(--red);transform:rotate(-3deg);background:var(--redsoft)}
+.stamp.used:nth-child(even){transform:rotate(2deg)}
+.check{list-style:none;margin:0 0 16px;padding:0;display:grid;gap:10px}
+.check li{display:grid;grid-template-columns:24px 1fr;gap:8px;font-size:15px;line-height:1.4;color:var(--mute)}
+.box{width:22px;height:22px;border:1.5px solid var(--ink);border-radius:3px;position:relative;margin-top:1px}
+.check li.done{color:var(--ink)}
+.check li.stuck .box{border-color:var(--red);border-style:dashed}
+.box svg{position:absolute;left:-2px;top:-6px}
+.grade{display:grid;justify-items:center;gap:6px;padding-top:6px}
+.circle{width:120px;height:120px;border:3px solid var(--red);border-radius:50% 46% 52% 48%;display:grid;place-items:center;transform:rotate(-7deg);font:600 46px/1 Mali,sans-serif;color:var(--red)}
+.grade ul{list-style:none;padding:0;margin:4px 0 0;width:100%;font-size:14px}
+.grade li{display:flex;justify-content:space-between;gap:8px;border-bottom:1px solid var(--rule);padding:4px 0}
+.grade li b{color:var(--red);font-family:Mali;white-space:nowrap}
+.note{font-size:14px;color:var(--mute);margin:8px 0 0;line-height:1.5}
+
+/* teacher ledger */
+.ledgerhead{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:14px}
+.ledgerhead h2{font-size:26px;margin-right:auto}
+.figs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0;border:1.5px solid var(--ink);background:var(--paper);margin-bottom:20px}
+.fig{padding:12px 16px;border-right:1px solid var(--line)}.fig:last-child{border-right:0}
+.fig .n{font:600 clamp(28px,3.6vw,40px)/1.1 Mali,sans-serif;color:var(--blue)}
+.fig p{margin:2px 0 0;font-size:14px;color:var(--mute)}
+.tgrid{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:20px;align-items:start}
+.pad{padding:16px 18px}
+.pad h3{font-size:17px;margin-bottom:10px}
+.memo{border-left:3px solid var(--red);padding:4px 0 4px 12px;margin:0 0 12px;font-size:16px}
+.memo b{display:block}.memo.good{border-color:var(--green)}
+.scroll{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:15px}
+th,td{border:1px solid var(--line);padding:6px 8px;text-align:center;white-space:nowrap}
+th{font-weight:600;background:var(--tab)}
+td:first-child,th:first-child{text-align:left}
+.cell{min-height:36px;min-width:58px;padding:0 8px;border:0;background:none;font-family:Mali;font-size:18px;font-weight:500}
+.c-hi{color:var(--blue)}.c-mid{color:var(--ink)}.c-lo{color:var(--red);text-decoration:underline wavy var(--red) 1px;text-underline-offset:5px}.c-wip{color:var(--mute);font-family:Sarabun;font-size:14px}
+.cell.sel{outline:2px solid var(--blue);border-radius:4px}
+.hrow{display:grid;grid-template-columns:minmax(0,1fr) 110px 26px;gap:10px;align-items:center;font-size:14px;margin:5px 0}
+.track{height:10px;border:1px solid var(--line);border-radius:2px}.track span{display:block;height:100%;background:var(--red)}
+.trace{max-height:460px;overflow-y:auto;line-height:1.55}
+.trace .ln{margin-bottom:8px}.trace .ln.a{margin-left:0}.trace .ln.a::before{display:none}
+.chip{font-size:12px;padding:0 6px;border:1px solid currentColor;border-radius:3px;margin-left:8px;font-family:Sarabun;white-space:nowrap}
+.k-think{color:var(--green)}.k-guess{color:var(--mute)}.k-ask_answer,.k-paste{color:var(--red)}.k-hint,.k-off_topic{color:var(--mute)}
+.small{font-size:13px;color:var(--mute)}
+
+/* settings dialog */
+.veil{position:fixed;inset:0;background:rgba(10,12,18,.55);display:grid;place-items:center;padding:16px;z-index:10}
+.dlg{background:var(--paper);border:1.5px solid var(--ink);border-radius:10px;box-shadow:6px 6px 0 var(--ink);width:min(520px,100%);padding:20px 22px;max-height:92vh;overflow-y:auto}
+.dlg h2{font-size:22px;margin-bottom:4px}
+.dlg label{display:block;font-weight:600;font-size:15px;margin:14px 0 6px}
+.dlg input,.dlg select{width:100%;min-height:44px;border:1.5px solid var(--line);border-radius:6px;padding:0 10px;background:var(--paper);font-size:16px}
+.keyrow{display:flex;gap:8px}.keyrow input{flex:1}
+.dlg .row{display:flex;gap:8px;flex-wrap:wrap;margin-top:18px}
+.msg{font-size:14px;margin-top:10px;min-height:22px}
+.msg.ok{color:var(--green)}.msg.bad{color:var(--red)}
+.dlg a{color:var(--blue)}
+.hidden{display:none!important}
+@media(max-width:1020px){.grid{grid-template-columns:minmax(0,1fr) 220px}.tocwrap{grid-column:1/-1}.toc{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));column-gap:18px}.toc h3{grid-column:1/-1}.tgrid{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:700px){.grid{grid-template-columns:minmax(0,1fr)}.figs{grid-template-columns:1fr 1fr}.fig:nth-child(2){border-right:0}.fig:nth-child(-n+2){border-bottom:1px solid var(--line)}
+.page{background:linear-gradient(90deg,transparent 30px,var(--margin) 30px,var(--margin) 32px,transparent 32px),repeating-linear-gradient(var(--paper) 0 31px,var(--rule) 31px 32px)}.page::before{display:none}
+.phead,.log,.write{padding-left:44px}.tabs{width:100%}.tabs a{flex:1;text-align:center}.aibtn{width:100%;justify-content:center}.toc{display:flex;overflow-x:auto;gap:10px;scroll-snap-type:x mandatory}.toc h3{display:none}.toc button{flex:0 0 150px;scroll-snap-align:start;border:1px solid var(--rule);border-radius:4px;padding:6px 10px}.ln.a::before{position:static;display:block;text-align:left;width:auto;line-height:1.4}.label h1 small{display:block;margin:0}.fill input{width:160px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="cover">
+    <div class="label">
+      <h1>สมุดแบบฝึกคิด<small>Thinking Mirror · ครูที่ไม่ยอมบอกคำตอบ</small></h1>
+      <div class="fill"><label for="who">ชื่อ</label><input id="who" autocomplete="off" placeholder="ชื่อเล่น / รหัส"><span class="small">คณิตศาสตร์ ม.1</span></div>
+    </div>
+    <div class="tabs">
+      <button type="button" class="aibtn" id="aiBtn"><span class="dot" id="aiDot"></span><span id="aiText">ตั้งค่า AI</span></button>
+      <a href="#student" id="navS">สมุดนักเรียน</a><a href="#teacher" id="navT">สมุดครู</a>
+    </div>
+  </div>
+
+  <main id="studentView" class="grid">
+    <div class="tocwrap sheet"><nav class="toc" id="toc" aria-label="สารบัญโจทย์"></nav></div>
+    <section class="sheet page" aria-live="polite">
+      <div class="phead"><div class="meta" id="pmeta"></div><h2 id="ptitle"></h2><p id="ptext"></p></div>
+      <div class="log" id="log"></div>
+      <form class="write" id="form">
+        <textarea id="msg" aria-label="เขียนวิธีคิดของฉัน"></textarea>
+        <div class="btns"><button class="ink" id="sendBtn" type="submit">ส่งให้ครูดู</button><button class="redbtn" id="hintBtn" type="button">ขอคำใบ้</button></div>
+      </form>
+    </section>
+    <aside class="sheet side">
+      <h3>ตรายางคำใบ้</h3><div class="stamps" id="stamps"></div>
+      <h3>ขั้นตอนที่ทำได้แล้ว</h3><ul class="check" id="check"></ul>
+      <div id="grade"></div>
+    </aside>
+  </main>
+
+  <main id="teacherView" class="hidden">
+    <div class="ledgerhead">
+      <h2>สมุดบันทึกผลการคิดของห้อง</h2>
+      <button type="button" id="demoBtn">โหลดข้อมูลตัวอย่าง</button>
+      <button type="button" id="csvBtn">คัดลอก CSV</button>
+      <button type="button" class="redbtn" id="clearBtn">ล้างข้อมูล</button>
+    </div>
+    <div class="figs" id="figs"></div>
+    <div class="tgrid">
+      <div>
+        <div class="sheet pad" style="margin-bottom:20px"><h3>บันทึกถึงครู</h3><div id="alerts"></div></div>
+        <div class="sheet pad"><h3>คะแนนความคิดเอง (กดตัวเลขเพื่อดูร่องรอยการคิด)</h3><div class="scroll"><table id="matrix"></table></div><p class="small" id="demoNote"></p></div>
+      </div>
+      <div>
+        <div class="sheet pad" style="margin-bottom:20px"><h3>ห้องนี้ติดขั้นไหนบ่อย</h3><div id="stuck"></div></div>
+        <div class="sheet pad"><h3 id="traceTitle">ร่องรอยการคิด</h3><div class="trace" id="trace"><p class="note">เลือกตัวเลขในตารางเพื่อดูว่านักเรียนคิดอย่างไรทีละบรรทัด</p></div></div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<div class="veil hidden" id="veil" role="dialog" aria-modal="true" aria-labelledby="dlgT">
+  <div class="dlg">
+    <h2 id="dlgT">ตั้งค่า AI (Gemini)</h2>
+    <p class="note" style="margin-top:0">ขอ API Key ฟรีได้ที่ <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">Google AI Studio</a> คีย์จะเก็บไว้ในเบราว์เซอร์เครื่องนี้เท่านั้น ไม่ถูกส่งไปที่ใดนอกจาก Google</p>
+    <label for="keyIn">Gemini API Key</label>
+    <div class="keyrow"><input id="keyIn" type="password" autocomplete="off" spellcheck="false" placeholder="AIza..."><button type="button" id="eyeBtn" aria-label="แสดงหรือซ่อนคีย์">แสดง</button></div>
+    <label for="modelSel">โมเดล</label>
+    <select id="modelSel"><option value="">กด "ทดสอบคีย์" เพื่อโหลดรายชื่อโมเดล</option></select>
+    <div class="msg" id="dlgMsg"></div>
+    <div class="row"><button type="button" id="testBtn">ทดสอบคีย์</button><button type="button" class="ink" id="saveBtn">บันทึก</button><button type="button" class="redbtn" id="delBtn">ลบคีย์</button><button type="button" id="closeBtn" style="margin-left:auto">ปิด</button></div>
+    <p class="note">ถ้าไม่ใส่คีย์ ระบบจะใช้คำใบ้สำเร็จรูปที่เขียนไว้ล่วงหน้าแทน</p>
+  </div>
+</div>
+
+<script>
+{
+const P=[
+{id:1,title:'กำไรร้านส้มตำ',text:'แม่ค้าขายส้มตำจานละ 45 บาท วันนี้ขายได้ 38 จาน ต้นทุนรวมทั้งวัน 920 บาท แม่ค้าได้กำไรเท่าไร',ans:'790',unit:'บาท',
+ steps:['เข้าใจว่ากำไร = รายรับ − ต้นทุน','หารายรับทั้งหมด','นำรายรับลบต้นทุนรวม'],
+ hints:['โจทย์ถามหาอะไร แล้วกำไรคำนวณจากอะไรกับอะไร ลองบอกมาก่อนว่าต้องหาอะไรบ้าง','ลองดูอีกที 920 บาทเป็นต้นทุน "รวมทั้งวัน" ไม่ใช่ต้นทุนต่อจานนะ','ถ้าขายขนม 3 ชิ้น ชิ้นละ 10 บาท ต้นทุนรวม 12 บาท จะกำไรเท่าไร ลองคิดแบบเดียวกันกับโจทย์นี้','วิธีคิด: รายรับ = ราคาต่อจาน × จำนวนจาน แล้วกำไร = รายรับ − ต้นทุนรวม ลองคำนวณเองทีละขั้น'],
+ right:['กำไร = รายรับ ลบ ต้นทุน','45 × 38 = 1710','1710 − 920 = 790 บาท'],wrong:['45 − 920 ติดลบ งง','920 ÷ 38 ได้ประมาณ 24']},
+{id:2,title:'นักเรียนหญิงในห้อง',text:'ห้องเรียนมีนักเรียน 36 คน เป็นนักเรียนชาย 4/9 ของทั้งห้อง ห้องนี้มีนักเรียนหญิงกี่คน',ans:'20',unit:'คน',
+ steps:['รู้ว่า 4/9 คือสัดส่วนนักเรียนชาย','หาจำนวนนักเรียนชาย','หาจำนวนนักเรียนหญิง'],
+ hints:['โจทย์ถามหาเด็กชายหรือเด็กหญิง แล้ว 4/9 เป็นข้อมูลของใคร','ถ้าหา 4/9 ของ 36 ได้แล้ว ตัวเลขนั้นใช่สิ่งที่โจทย์ถามหรือยัง ลองอ่านคำถามอีกรอบ','ถ้ามีนักเรียน 10 คน เป็นชาย 2/5 จะมีชายกี่คน และหญิงกี่คน','วิธีคิด: หาจำนวนชายจาก 36 × 4/9 แล้วนำจำนวนทั้งห้องลบจำนวนชาย หรือใช้สัดส่วนที่เหลือ 5/9 ก็ได้'],
+ right:['4/9 คือผู้ชาย','36 × 4/9 = 16 คน','36 − 16 = 20 คน'],wrong:['ตอบ 16 คน','36 ÷ 4 = 9']},
+{id:3,title:'เกมทายเลขในใจ',text:'คิดจำนวนหนึ่งไว้ในใจ นำไปคูณ 3 แล้วบวก 7 ได้ผลลัพธ์ 52 จำนวนที่คิดไว้คือเท่าไร',ans:'15',unit:'',
+ steps:['ตั้งสมการหรือวางแผนคิดย้อนกลับ','ย้อนการบวก 7','ย้อนการคูณ 3'],
+ hints:['ถ้าเรียกจำนวนนั้นว่า x จะเขียนสิ่งที่เกิดขึ้นเป็นประโยคคณิตศาสตร์ได้อย่างไร','ถ้าจะคิดย้อนกลับ ต้องย้อนจากขั้นสุดท้ายก่อน ขั้นสุดท้ายที่ทำกับจำนวนนั้นคืออะไร','ถ้าคิดเลขในใจ คูณ 2 แล้วบวก 1 ได้ 9 จำนวนนั้นคือเท่าไร ลองย้อนดู','วิธีคิด: 3x + 7 = 52 ย้อนการบวก 7 ด้วยการลบ 7 ทั้งสองข้าง แล้วย้อนการคูณ 3 ด้วยการหาร 3'],
+ right:['3x + 7 = 52','52 − 7 = 45','45 ÷ 3 = 15'],wrong:['52 ÷ 3 แล้วลบ 7','(52 + 7) ÷ 3']},
+{id:4,title:'ปากกากับดินสอ',text:'ปากกาด้ามละ 12 บาท ดินสอแท่งละ 5 บาท ต้นซื้อทั้งสองอย่างรวม 10 ชิ้น จ่ายเงินไป 92 บาท ต้นซื้อปากกากี่ด้าม',ans:'6',unit:'ด้าม',
+ steps:['กำหนดตัวแปรจำนวนปากกา','เขียนจำนวนดินสอและสมการราคารวม','แก้สมการ'],
+ hints:['ถ้าซื้อปากกา p ด้าม จะซื้อดินสอกี่แท่ง','ลองเช็กว่าราคารวม 92 บาท ต้องคิดทั้งราคาปากกาและราคาดินสอรวมกัน','ถ้าซื้อปากกา 1 ด้ามกับดินสอ 9 แท่ง จะจ่ายกี่บาท ลองเพิ่มปากกาทีละด้ามแล้วสังเกตว่าราคาเพิ่มขึ้นทีละเท่าไร','วิธีคิด: 12p + 5(10 − p) = 92 กระจายวงเล็บ รวมพจน์ที่มี p แล้วแก้สมการ'],
+ right:['ปากกา p ดินสอ 10 − p','12p + 5(10 − p) = 92','7p = 42 ได้ p = 6 ด้าม'],wrong:['92 ÷ 12','12p + 5p = 92']},
+{id:5,title:'รถตู้ไปขอนแก่น',text:'รถตู้วิ่งระยะทาง 180 กิโลเมตร ใช้เวลา 2 ชั่วโมง 30 นาที อัตราเร็วเฉลี่ยเป็นกี่กิโลเมตรต่อชั่วโมง',ans:'72',unit:'กม./ชม.',
+ steps:['รู้ว่าอัตราเร็ว = ระยะทาง ÷ เวลา','แปลง 2 ชม. 30 นาที เป็นชั่วโมง','คำนวณอัตราเร็ว'],
+ hints:['คำว่า "กิโลเมตรต่อชั่วโมง" บอกอะไรเราเกี่ยวกับวิธีคำนวณ','30 นาทีเท่ากับ 0.30 ชั่วโมงจริงไหม ลองนึกว่า 1 ชั่วโมงมีกี่นาที','ถ้าวิ่ง 100 กม. ใช้เวลา 2 ชั่วโมง อัตราเร็วเท่าไร แล้วถ้าใช้เวลา 2 ชั่วโมงครึ่งจะเร็วขึ้นหรือช้าลง','วิธีคิด: เปลี่ยนเวลาเป็นชั่วโมงทศนิยมก่อน (30 นาทีคือครึ่งชั่วโมง) แล้วนำระยะทางหารด้วยเวลา'],
+ right:['อัตราเร็ว = ระยะทาง ÷ เวลา','2 ชม. 30 นาที = 2.5 ชม.','180 ÷ 2.5 = 72 กม./ชม.'],wrong:['180 ÷ 2.30 ได้ 78.26','180 ÷ 230']}
+];
+const RUNG=['ถามให้สังเกต','ชี้จุดที่ควรดู','ตัวอย่างที่ง่ายกว่า','อธิบายวิธีคิด'];
+const CAT={think:'คิดเอง',guess:'เดา',ask_answer:'ขอคำตอบ',off_topic:'นอกเรื่อง',paste:'วางข้อความ',hint:'ขอคำใบ้'};
+const KEY='tm_sessions_v1',CFG='tm_gemini_v1';
+const API='https://generativelanguage.googleapis.com/v1beta/';
+const TICK='<svg width="28" height="28" viewBox="0 0 28 28" aria-hidden="true"><path d="M4 15 l6 7 L25 3" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="color:var(--red)"/></svg>';
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const load=(k,d)=>{try{return JSON.parse(localStorage.getItem(k))??d}catch(e){return d}};
+const store=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
+let sessions=load(KEY,[]);const save=()=>store(KEY,sessions);
+let cfg=load(CFG,{key:'',model:''});
+let who=load('tm_who','');$('who').value=who;
+let cur=P[0],sess=null,busy=false,pasted=false,S=null,lastErr='';
+
+const hasAns=(t,a)=>new RegExp('(^|[^0-9.])'+a.replace('.','\\.')+'([^0-9]|$)').test(String(t).replace(/,/g,''));
+
+function score(s){
+  const out=[];let n=100;
+  if(s.maxLvl>0){out.push(['ใช้คำใบ้ถึงขั้น '+s.maxLvl,-12*s.maxLvl]);n-=12*s.maxLvl}
+  const ask=s.msgs.filter(m=>m.cat==='ask_answer').length;if(ask){out.push(['ขอคำตอบตรง ๆ '+ask+' ครั้ง',-15*ask]);n-=15*ask}
+  const pa=s.msgs.filter(m=>m.pasted).length;if(pa){out.push(['วางข้อความจากที่อื่น '+pa+' ครั้ง',-10*pa]);n-=10*pa}
+  const g=s.msgs.filter(m=>m.cat==='guess').length;if(g>2){out.push(['เดาเกิน 2 ครั้ง',-5*(g-2)]);n-=5*(g-2)}
+  if(s.explain){const d={understand:0,partial:-5,not_yet:-15}[s.explain.verdict]||0;out.push(['อธิบายย้อนกลับ: '+({understand:'เข้าใจจริง',partial:'เข้าใจบางส่วน',not_yet:'ยังไม่เข้าใจ'}[s.explain.verdict]||'-'),d]);n+=d}
+  return {n:Math.max(0,Math.min(100,n)),out};
+}
+function getSess(p){
+  let s=sessions.find(x=>!x.demo&&x.student===who&&x.pid===p.id);
+  if(!s){s={id:Date.now()+'-'+p.id,student:who,pid:p.id,start:Date.now(),msgs:[],lvl:0,maxLvl:0,since:0,step:-1,stuck:{},solved:false,mode:'solve',explain:null,done:false};sessions.push(s);save()}
+  return s;
+}
+
+/* ---------- student render ---------- */
+function renderToc(){
+  $('toc').innerHTML='<h3>สารบัญ</h3>'+P.map(p=>{const s=sessions.find(x=>!x.demo&&x.student===who&&x.pid===p.id);
+    const st=s?(s.done?'<small class="ok">'+score(s).n+'</small>':'<small>กำลังทำ</small>'):'<small>—</small>';
+    return '<button type="button" class="'+(p===cur?'on':'')+'" data-p="'+p.id+'"><b>ข้อ '+p.id+'</b><span class="lead"></span>'+st+'<span style="grid-column:1/-1;font-size:15px">'+esc(p.title)+'</span></button>'}).join('');
+}
+function renderSide(){
+  const s=sess;
+  $('stamps').innerHTML=RUNG.map((r,i)=>{const used=s&&i>0&&s.maxLvl>=i;return '<div class="stamp'+(used?' used':'')+'"><b>'+(i===0?'ถาม':'ใบ้ '+i)+'</b>'+r+'</div>'}).join('');
+  $('check').innerHTML=cur.steps.map((t,i)=>{const done=s&&(s.solved||i<=s.step);const stuck=s&&!done&&s.stuck[i];
+    return '<li class="'+(done?'done':'')+(stuck?' stuck':'')+'"><span class="box">'+(done?TICK:'')+'</span><span>'+esc(t)+'</span></li>'}).join('');
+  if(s&&s.done){const sc=score(s);$('grade').innerHTML='<div class="grade"><div class="circle">'+sc.n+'</div><span class="small">คะแนนความคิดเอง</span><ul>'+(sc.out.length?sc.out.map(o=>'<li><span>'+esc(o[0])+'</span><b>'+o[1]+'</b></li>').join(''):'<li><span>คิดเองทั้งหมด ไม่ใช้คำใบ้</span><b>0</b></li>')+'</ul></div>'}
+  else $('grade').innerHTML='<p class="note">ทำข้อนี้เสร็จแล้วครูจะให้คะแนนความคิดเอง ยิ่งคิดเองมาก คะแนนยิ่งสูง</p>';
+}
+function line(m){
+  if(m.who==='n')return '<p class="ln n">'+esc(m.text)+'</p>';
+  if(m.who==='a')return '<p class="ln a">'+esc(m.text)+'</p>';
+  const tag=m.cat?'<span class="tag">'+(m.pasted?'วางข้อความ · ':'')+CAT[m.cat]+'</span>':'';
+  return '<p class="ln s">'+esc(m.text)+tag+'</p>';
+}
+function renderPage(){
+  $('pmeta').textContent='ข้อ '+cur.id+' · โจทย์ปัญหา';$('ptitle').textContent=cur.title;$('ptext').textContent=cur.text;
+  const intro='<p class="ln a">ครูจะไม่บอกคำตอบนะ แต่จะช่วยให้คิดออกเอง เริ่มจากเขียนสิ่งที่คิดมา 1 อย่าง จะถูกหรือผิดก็ได้</p>';
+  $('log').innerHTML=(who?'':'<p class="ln n">เขียนชื่อที่หน้าปกสมุดก่อนเริ่มทำ</p>')+intro+(sess?sess.msgs.map(line).join(''):'')+(busy?'<p class="think">ครูกำลังอ่าน <span>.</span><span>.</span><span>.</span></p>':'');
+  $('log').scrollTop=$('log').scrollHeight;
+  const off=!who||busy||(sess&&sess.done);
+  $('sendBtn').disabled=off;$('hintBtn').disabled=off||(sess&&(sess.mode==='explain'||sess.lvl>=3));
+  $('msg').disabled=!who||(sess&&sess.done);
+  $('msg').placeholder=sess&&sess.done?'ข้อนี้เสร็จแล้ว เลือกข้อถัดไปจากสารบัญ':sess&&sess.mode==='explain'?'อธิบายให้เพื่อนฟังว่าทำยังไงถึงได้คำตอบนี้':'ฉันคิดว่า…';
+}
+function render(){renderToc();renderPage();renderSide()}
+function pick(p){cur=p;sess=who?getSess(p):null;render()}
+
+/* ---------- AI engines ---------- */
+function engine(){return cfg.key&&cfg.model?'gemini':S?'claude':'offline'}
+function setStatus(){
+  const e=engine();
+  $('aiDot').className='dot'+(e==='offline'?'':lastErr?' warn':' on');
+  $('aiText').textContent=e==='gemini'?'AI: '+cfg.model.replace('models/',''):e==='claude'?'AI: Claude':'ยังไม่ได้ใส่คีย์ AI';
+  $('aiBtn').title=lastErr||'ตั้งค่า AI';
+}
+async function gemini(prompt){
+  const r=await fetch(API+cfg.model+':generateContent',{method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':cfg.key},
+    body:JSON.stringify({contents:[{role:'user',parts:[{text:prompt}]}],generationConfig:{responseMimeType:'application/json',temperature:.4}})});
+  const j=await r.json().catch(()=>({}));
+  if(!r.ok)throw new Error((j.error&&j.error.message)||('HTTP '+r.status));
+  const parts=(((j.candidates||[])[0]||{}).content||{}).parts||[];
+  return parts.map(p=>p.text||'').join('');
+}
+function parse(v){
+  if(v&&typeof v==='object')return v;
+  const m=String(v||'').match(/\{[\s\S]*\}/);if(!m)return null;
+  try{return JSON.parse(m[0])}catch(e){return null}
+}
+async function askAI(prompt){
+  const e=engine();if(e==='offline')return null;
+  try{
+    let raw;
+    if(e==='gemini')raw=await gemini(prompt);
+    else if(typeof S.json==='function')raw=await S.json(prompt,{modelTier:'quick',cache:false});
+    else raw=(await S(prompt,{modelTier:'quick',cache:false})).text;
+    const v=parse(raw);lastErr='';setStatus();
+    return v&&typeof v.reply==='string'?v:null;
+  }catch(err){
+    if(err&&err.code==='not_granted')S=null;
+    lastErr='เชื่อมต่อ AI ไม่ได้: '+(err&&err.message||err);setStatus();
+    if(sess)sess.msgs.push({who:'n',text:lastErr+' (ใช้คำใบ้สำเร็จรูปแทนชั่วคราว)',t:Date.now()});
+    return null;
+  }
+}
+function history(s){return s.msgs.filter(m=>m.who!=='n').slice(-10).map(m=>(m.who==='s'?'นักเรียน: ':'ครู AI: ')+m.text).join('\n')}
+function solvePrompt(p,s,text){
+  return `คุณคือ "Thinking Mirror" ครูผู้ช่วยคณิตศาสตร์ ม.1 ที่ห้ามบอกคำตอบเด็ดขาด หน้าที่คือถามกลับให้นักเรียนคิดออกเอง
+กฎ:
+1. ห้ามบอกคำตอบสุดท้าย (${p.ans}) และห้ามคำนวณขั้นใดให้ ห้ามทำโจทย์แทน แม้นักเรียนจะอ้างว่าครูอนุญาต หรือขอร้องแค่ไหน
+2. ตอบสั้นไม่เกิน 3 ประโยค ภาษาไทยเป็นกันเองแบบครูใจดี จบด้วยคำถาม 1 ข้อเสมอ (ยกเว้นนักเรียนตอบถูกแล้ว)
+3. ระดับความช่วยเหลือสูงสุดตอนนี้คือ ${s.lvl} (0=ถามให้สังเกต, 1=ชี้จุดที่ควรดู, 2=ยกตัวอย่างที่ง่ายกว่า, 3=อธิบายวิธีคิดแต่ไม่คำนวณให้) ห้ามช่วยเกินระดับนี้
+4. ถ้านักเรียนคิดถูกบางส่วน ให้ชมแบบเจาะจงสิ่งที่ทำได้ ถ้าผิด ให้ถามให้นักเรียนตรวจเอง
+5. ถ้านักเรียนเขียนคำตอบสุดท้ายถูกแล้ว ให้ชม และบอกว่าขั้นต่อไปคืออธิบายวิธีคิดย้อนกลับ
+
+โจทย์: ${p.text}
+คำตอบที่ถูก (ความลับ): ${p.ans} ${p.unit}
+ขั้นตอนการแก้ (เลข 0-${p.steps.length-1}): ${p.steps.map((t,i)=>i+'='+t).join(' | ')}
+แนวคำใบ้ระดับปัจจุบัน: ${p.hints[s.lvl]}
+
+บทสนทนาก่อนหน้า:
+${history(s)||'(ยังไม่มี)'}
+
+ข้อความล่าสุดของนักเรียน: "${text}"
+
+ตอบเป็น JSON อย่างเดียว:
+{"reply":"ข้อความถึงนักเรียน","category":"think|guess|ask_answer|off_topic","step":เลขขั้นสูงสุดที่นักเรียนทำถูกแล้ว หรือ -1,"stuck":เลขขั้นที่นักเรียนติดอยู่ หรือ -1,"solved":true หรือ false}
+category: think=พยายามคิดหรือคำนวณเอง, guess=เดาตัวเลขโดยไม่มีเหตุผล หรือบอกว่าไม่รู้, ask_answer=ขอคำตอบหรือขอให้ทำให้, off_topic=ไม่เกี่ยวกับโจทย์`;
+}
+function explainPrompt(p,s,text){
+  return `คุณคือครูคณิตศาสตร์ ม.1 นักเรียนแก้โจทย์นี้ได้คำตอบถูกแล้ว ตอนนี้ให้นักเรียนอธิบายวิธีคิดย้อนกลับ เพื่อตรวจว่าเข้าใจจริงหรือเดาถูก
+โจทย์: ${p.text}
+คำตอบ: ${p.ans} ${p.unit}
+ขั้นตอนที่ควรมี: ${p.steps.join(' → ')}
+คำอธิบายของนักเรียน: "${text}"
+ประเมินว่านักเรียนอธิบายครบขั้นตอนและมีเหตุผลหรือไม่ ตอบเป็น JSON อย่างเดียว:
+{"reply":"คำชมหรือข้อเสนอแนะสั้น ๆ 1-2 ประโยค ภาษาไทยเป็นกันเอง","verdict":"understand|partial|not_yet"}`;
+}
+function offline(p,s,text){
+  let cat='think';
+  if(/เฉลย|บอกคำตอบ|ตอบมาเลย|ขอคำตอบ|ทำให้หน่อย|คำตอบคืออะไร/.test(text))cat='ask_answer';
+  else if(/ไม่รู้|งง|ไม่เข้าใจ/.test(text)||(text.trim().length<4&&!/[0-9]/.test(text)))cat='guess';
+  const solved=hasAns(text,p.ans);
+  let reply;
+  if(solved)reply='เก่งมาก ได้คำตอบที่ถูกแล้ว ขั้นต่อไป ลองอธิบายให้เพื่อนฟังหน่อยว่าทำยังไงถึงได้คำตอบนี้';
+  else if(cat==='ask_answer')reply='ครูบอกคำตอบให้ไม่ได้นะ แต่เราคิดไปด้วยกันได้\n'+p.hints[s.lvl];
+  else reply=p.hints[s.lvl];
+  let step=s.step;p.right.forEach((r,i)=>{const n=(r.match(/[0-9.]+/g)||[]).pop();if(n&&hasAns(text,n))step=Math.max(step,i)});
+  if(!solved&&step>s.step&&cat==='think')reply='ดีมาก ขั้นนี้ถูกต้องแล้ว ขั้นต่อไปต้องทำอะไรต่อ';
+  return {reply,category:cat,step:solved?p.steps.length-1:step,stuck:solved?-1:Math.min(step+1,p.steps.length-1),solved};
+}
+async function send(text){
+  const s=sess,p=cur;
+  const now=Date.now(),last=s.msgs.length?s.msgs[s.msgs.length-1].t:s.start;
+  const m={who:'s',text,t:now,dt:Math.round((now-last)/1000),pasted};pasted=false;
+  s.msgs.push(m);busy=true;renderPage();
+  if(s.mode==='explain'){
+    let r=await askAI(explainPrompt(p,s,text));
+    if(!r){const ok=text.length>25&&/[0-9]/.test(text);r={reply:ok?'อธิบายได้ดี เห็นขั้นตอนชัดเจน':'ลองบอกเหตุผลของแต่ละขั้นให้ละเอียดขึ้นอีกนิดนะ แต่ข้อนี้ผ่านแล้ว',verdict:ok?'understand':'partial'}}
+    if(!['understand','partial','not_yet'].includes(r.verdict))r.verdict='partial';
+    m.cat='think';s.explain={text,verdict:r.verdict};s.msgs.push({who:'a',text:String(r.reply),t:Date.now()});s.done=true;s.doneAt=Date.now();
+    busy=false;save();render();return;
+  }
+  let r=await askAI(solvePrompt(p,s,text));
+  if(!r)r=offline(p,s,text);
+  if(!CAT[r.category])r.category='think';
+  const solved=hasAns(text,p.ans); // นับว่าถูกเมื่อนักเรียนเขียนคำตอบเองเท่านั้น
+  let reply=String(r.reply||'');
+  if(!solved&&hasAns(reply,p.ans))reply=p.hints[s.lvl]; // กันคำตอบหลุด
+  m.cat=r.category;
+  if(r.category==='think')s.since++;
+  const st=parseInt(r.step,10);if(!isNaN(st)&&st>s.step)s.step=Math.min(st,p.steps.length-1);
+  const sk=parseInt(r.stuck,10);if(!isNaN(sk)&&sk>=0&&sk<p.steps.length&&!solved)s.stuck[sk]=(s.stuck[sk]||0)+1;
+  s.msgs.push({who:'a',text:reply,t:Date.now(),lvl:s.lvl});
+  if(solved){s.solved=true;s.step=p.steps.length-1;s.mode='explain';s.solvedAt=Date.now();
+    if(!/อธิบาย/.test(reply))s.msgs.push({who:'a',text:'ถูกต้อง ก่อนจบข้อนี้ ลองอธิบายให้เพื่อนฟังหน่อยว่าทำยังไงถึงได้คำตอบนี้',t:Date.now()})}
+  busy=false;save();render();
+}
+function hint(){
+  const s=sess,p=cur;
+  if(s.since<1){s.msgs.push({who:'n',text:'เขียนสิ่งที่คิดมาก่อน 1 อย่างนะ จะไม่แน่ใจก็ได้ แล้วค่อยขอคำใบ้ขั้นถัดไป',t:Date.now()});renderPage();return}
+  s.lvl=Math.min(3,s.lvl+1);s.maxLvl=Math.max(s.maxLvl,s.lvl);s.since=0;
+  const nx=Math.min(s.step+1,p.steps.length-1);s.stuck[nx]=(s.stuck[nx]||0)+1;
+  s.msgs.push({who:'s',text:'(ขอคำใบ้ขั้นที่ '+s.lvl+')',t:Date.now(),cat:'hint'});
+  s.msgs.push({who:'a',text:'คำใบ้ขั้นที่ '+s.lvl+' · '+RUNG[s.lvl]+'\n'+p.hints[s.lvl],t:Date.now(),lvl:s.lvl});
+  save();render();
+}
+
+/* ---------- teacher ---------- */
+let sel=null;
+function teacher(){
+  const done=sessions.filter(s=>s.done);
+  const avg=done.length?Math.round(done.reduce((a,s)=>a+score(s).n,0)/done.length):0;
+  const indep=done.length?Math.round(100*done.filter(s=>s.maxLvl<=1).length/done.length):0;
+  const asks=sessions.reduce((a,s)=>a+s.msgs.filter(m=>m.cat==='ask_answer').length,0);
+  $('figs').innerHTML=[[sessions.length,'ครั้งที่ทำโจทย์ (เสร็จ '+done.length+')'],[avg,'คะแนนความคิดเองเฉลี่ย'],[indep+'%','แก้ได้โดยใช้คำใบ้ไม่เกินขั้น 1'],[asks,'ครั้งที่ขอคำตอบตรง ๆ']].map(f=>'<div class="fig"><div class="n">'+f[0]+'</div><p>'+f[1]+'</p></div>').join('');
+  const al=[];
+  P.forEach(p=>{const ss=sessions.filter(s=>s.pid===p.id);if(ss.length<2)return;
+    const hard=ss.filter(s=>s.maxLvl>=2).length/ss.length;
+    const agg={};ss.forEach(s=>Object.entries(s.stuck||{}).forEach(([k,v])=>agg[k]=(agg[k]||0)+v));
+    const top=Object.entries(agg).sort((a,b)=>b[1]-a[1])[0];
+    if(hard>=.4&&top&&p.steps[+top[0]])al.push('<p class="memo"><b>ควรสอนซ้ำข้อ '+p.id+' '+esc(p.title)+'</b>'+Math.round(hard*100)+'% ของห้องต้องใช้คำใบ้ตั้งแต่ขั้น 2 ขึ้นไป ส่วนใหญ่ติดที่ "'+esc(p.steps[+top[0]])+'"</p>')});
+  const askers=[...new Set(sessions.filter(s=>s.msgs.some(m=>m.cat==='ask_answer'||m.pasted)).map(s=>s.student))];
+  if(askers.length)al.push('<p class="memo"><b>คุยกับนักเรียนเรื่องการพึ่ง AI</b>'+askers.map(esc).join(', ')+' ขอคำตอบตรง ๆ หรือวางข้อความจากที่อื่น</p>');
+  const stars=[...new Set(done.filter(s=>score(s).n>=88).map(s=>s.student))];
+  if(stars.length)al.push('<p class="memo good"><b>ให้เป็นพี่เลี้ยงเพื่อน</b>'+stars.map(esc).join(', ')+' คิดเองได้เกือบทั้งหมดและอธิบายย้อนกลับได้</p>');
+  $('alerts').innerHTML=al.join('')||'<p class="note">ยังไม่มีข้อมูลพอ ให้นักเรียนลองทำโจทย์ในสมุดนักเรียน หรือกด "โหลดข้อมูลตัวอย่าง"</p>';
+  const studs=[...new Set(sessions.map(s=>s.student))];
+  $('matrix').innerHTML='<tr><th>ชื่อ</th>'+P.map(p=>'<th>ข้อ '+p.id+'</th>').join('')+'</tr>'+studs.map(n=>'<tr><td>'+esc(n)+'</td>'+P.map(p=>{const s=sessions.find(x=>x.student===n&&x.pid===p.id);if(!s)return '<td class="small">—</td>';
+    const v=s.done?score(s).n:null;const c=v===null?'c-wip':v>=80?'c-hi':v>=50?'c-mid':'c-lo';
+    return '<td><button type="button" class="cell '+c+(s.id===sel?' sel':'')+'" data-s="'+esc(s.id)+'">'+(v===null?'ทำอยู่':v)+'</button></td>'}).join('')+'</tr>').join('');
+  $('demoNote').textContent=sessions.some(s=>s.demo)?'ตารางนี้มีข้อมูลตัวอย่างที่สร้างขึ้นเพื่อสาธิต':'';
+  $('stuck').innerHTML=P.map(p=>{const agg=p.steps.map((t,i)=>sessions.filter(s=>s.pid===p.id).reduce((a,s)=>a+((s.stuck||{})[i]||0),0));const mx=Math.max(1,...agg);
+    return '<p class="small" style="margin:12px 0 2px;font-weight:600;color:var(--ink)">ข้อ '+p.id+' '+esc(p.title)+'</p>'+p.steps.map((t,i)=>'<div class="hrow"><span>'+esc(t)+'</span><div class="track"><span style="width:'+Math.round(100*agg[i]/mx)+'%"></span></div><b>'+agg[i]+'</b></div>').join('')}).join('');
+  showTrace();
+}
+function showTrace(){
+  const s=sessions.find(x=>x.id===sel);if(!s)return;
+  const p=P.find(x=>x.id===s.pid);
+  $('traceTitle').textContent='ร่องรอยการคิด · '+s.student+' · ข้อ '+p.id;
+  $('trace').innerHTML=s.msgs.map(m=>{
+    if(m.who==='s'){const k=m.pasted?'paste':m.cat;return '<p class="ln s">'+esc(m.text)+'<span class="chip k-'+esc(k)+'">'+(CAT[k]||'')+'</span>'+(m.dt!=null?'<span class="tag">'+m.dt+' วิ.</span>':'')+'</p>'}
+    return '<p class="ln '+(m.who==='n'?'n':'a')+'">'+esc(m.text)+'</p>'}).join('')+(s.done?'<p class="ln n">จบด้วยคะแนนความคิดเอง '+score(s).n+' · ใช้คำใบ้สูงสุดขั้น '+s.maxLvl+'</p>':'');
+}
+function demo(){
+  let seed=7;const rnd=()=>(seed=(seed*9301+49297)%233280)/233280;
+  const names=['ต้นกล้า','ใบเตย','ภูผา','น้ำฝน','กันต์','มิว','ปลื้ม','อาร์ม'];
+  const diff={1:.2,2:.55,3:.3,4:.6,5:.7};
+  sessions=sessions.filter(s=>!s.demo);
+  names.forEach((n,ni)=>P.forEach(p=>{if(rnd()<.15)return;
+    const skill=1-ni/10;let t=Date.now()-86400000+ni*600000+p.id*90000;const msgs=[];let lvl=0,mx=0;const stuck={};
+    const tough=rnd()<diff[p.id]+(1-skill)*.3-.1;
+    if(rnd()<.12*(1-skill)+.03){msgs.push({who:'s',text:'บอกคำตอบมาเลยได้ไหม',t,dt:8,cat:'ask_answer'});msgs.push({who:'a',text:'ครูบอกคำตอบให้ไม่ได้นะ แต่เราคิดไปด้วยกันได้\n'+p.hints[0],t:t+3000})}
+    msgs.push({who:'s',text:p.right[0],t:t+20000,dt:40,cat:'think'});msgs.push({who:'a',text:'ดีมาก เริ่มต้นถูกทางแล้ว ขั้นต่อไปต้องหาอะไร',t:t+24000});
+    if(tough){const w=p.wrong[Math.floor(rnd()*p.wrong.length)];msgs.push({who:'s',text:w,t:t+60000,dt:36,cat:rnd()<.4?'guess':'think',pasted:rnd()<.08});stuck[1]=(stuck[1]||0)+1;
+      const go=rnd()<.6?3:2;for(let l=1;l<=go;l++){lvl=l;mx=l;const k=p.id===5?1:2;stuck[k]=(stuck[k]||0)+1;msgs.push({who:'s',text:'(ขอคำใบ้ขั้นที่ '+l+')',t:t+70000+l*30000,cat:'hint'});msgs.push({who:'a',text:'คำใบ้ขั้นที่ '+l+' · '+RUNG[l]+'\n'+p.hints[l],t:t+72000+l*30000})}}
+    else if(rnd()<.4){lvl=1;mx=1;stuck[2]=1;msgs.push({who:'s',text:'(ขอคำใบ้ขั้นที่ 1)',t:t+50000,cat:'hint'});msgs.push({who:'a',text:'คำใบ้ขั้นที่ 1 · '+RUNG[1]+'\n'+p.hints[1],t:t+52000})}
+    msgs.push({who:'s',text:p.right[1],t:t+200000,dt:55,cat:'think'});msgs.push({who:'a',text:'ถูกต้อง แล้วขั้นสุดท้ายล่ะ',t:t+203000});
+    if(rnd()<.9){msgs.push({who:'s',text:p.right[2],t:t+260000,dt:57,cat:'think'});msgs.push({who:'a',text:'ถูกต้อง ลองอธิบายให้เพื่อนฟังหน่อยว่าทำยังไง',t:t+262000});
+      const v=rnd()<skill-.15?'understand':rnd()<.6?'partial':'not_yet';
+      msgs.push({who:'s',text:p.right.join(' แล้ว '),t:t+330000,dt:68,cat:'think'});msgs.push({who:'a',text:v==='understand'?'อธิบายได้ครบทุกขั้น เยี่ยมมาก':'อธิบายได้บางส่วน ลองบอกเหตุผลของแต่ละขั้นด้วยนะ',t:t+333000});
+      sessions.push({id:'demo-'+ni+'-'+p.id,demo:true,student:n,pid:p.id,start:t,msgs,lvl,maxLvl:mx,since:0,step:2,stuck,solved:true,mode:'explain',explain:{verdict:v},done:true})}
+    else sessions.push({id:'demo-'+ni+'-'+p.id,demo:true,student:n,pid:p.id,start:t,msgs,lvl,maxLvl:mx,since:1,step:1,stuck,solved:false,mode:'solve',explain:null,done:false});
+  }));
+  save();sel='demo-2-4';teacher();
+}
+
+/* ---------- settings dialog ---------- */
+function openDlg(){$('keyIn').value=cfg.key||'';fillModels(cfg.model?[cfg.model]:[]);$('dlgMsg').textContent=lastErr;$('dlgMsg').className='msg'+(lastErr?' bad':'');$('veil').classList.remove('hidden');$('keyIn').focus()}
+function closeDlg(){$('veil').classList.add('hidden');$('aiBtn').focus()}
+function fillModels(list,pick){
+  const sel=$('modelSel');
+  if(!list.length){sel.innerHTML='<option value="">กด "ทดสอบคีย์" เพื่อโหลดรายชื่อโมเดล</option>';return}
+  sel.innerHTML=list.map(n=>'<option value="'+esc(n)+'">'+esc(n.replace('models/',''))+'</option>').join('');
+  sel.value=pick||cfg.model||list[0];
+}
+function rank(n){const v=parseFloat((n.match(/gemini-(\d+(?:\.\d+)?)/)||[])[1]||0);return v*10+(/flash/.test(n)?3:0)-(/lite/.test(n)?1:0)-(/preview|exp/.test(n)?2:0)}
+async function testKey(){
+  const key=$('keyIn').value.trim();const msg=$('dlgMsg');
+  if(!key){msg.textContent='กรุณาใส่ API Key ก่อน';msg.className='msg bad';return}
+  msg.textContent='กำลังตรวจสอบคีย์…';msg.className='msg';$('testBtn').disabled=true;
+  try{
+    const r=await fetch(API+'models?pageSize=200',{headers:{'x-goog-api-key':key}});
+    const j=await r.json().catch(()=>({}));
+    if(!r.ok)throw new Error((j.error&&j.error.message)||('HTTP '+r.status));
+    const list=(j.models||[]).filter(m=>(m.supportedGenerationMethods||[]).includes('generateContent')&&/gemini/.test(m.name)&&!/image|tts|audio|live|embed|vision|robotics|computer/.test(m.name)).map(m=>m.name);
+    if(!list.length)throw new Error('ไม่พบโมเดลที่ใช้สร้างข้อความได้');
+    const best=[...list].sort((a,b)=>rank(b)-rank(a))[0];
+    fillModels(list,list.includes(cfg.model)?cfg.model:best);
+    msg.textContent='คีย์ใช้งานได้ พบ '+list.length+' โมเดล เลือกให้อัตโนมัติแล้ว กด "บันทึก" เพื่อใช้งาน';msg.className='msg ok';
+  }catch(err){msg.textContent='ใช้คีย์นี้ไม่ได้: '+(err.message||err);msg.className='msg bad'}
+  $('testBtn').disabled=false;
+}
+$('aiBtn').addEventListener('click',openDlg);
+$('closeBtn').addEventListener('click',closeDlg);
+$('veil').addEventListener('click',e=>{if(e.target===$('veil'))closeDlg()});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('veil').classList.contains('hidden'))closeDlg()});
+$('eyeBtn').addEventListener('click',e=>{const k=$('keyIn');k.type=k.type==='password'?'text':'password';e.target.textContent=k.type==='password'?'แสดง':'ซ่อน'});
+$('testBtn').addEventListener('click',testKey);
+$('saveBtn').addEventListener('click',()=>{const key=$('keyIn').value.trim(),model=$('modelSel').value;
+  if(!key||!model){$('dlgMsg').textContent='ใส่คีย์แล้วกด "ทดสอบคีย์" ให้ผ่านก่อนบันทึก';$('dlgMsg').className='msg bad';return}
+  cfg={key,model};store(CFG,cfg);lastErr='';setStatus();$('dlgMsg').textContent='บันทึกแล้ว ครู AI พร้อมตรวจสมุด';$('dlgMsg').className='msg ok';setTimeout(closeDlg,700)});
+$('delBtn').addEventListener('click',()=>{cfg={key:'',model:''};store(CFG,cfg);$('keyIn').value='';fillModels([]);lastErr='';setStatus();$('dlgMsg').textContent='ลบคีย์ออกจากเครื่องนี้แล้ว';$('dlgMsg').className='msg'});
+
+/* ---------- routing & events ---------- */
+function route(){
+  const t=location.hash==='#teacher';
+  $('studentView').classList.toggle('hidden',t);$('teacherView').classList.toggle('hidden',!t);
+  $('navS').classList.toggle('on',!t);$('navT').classList.toggle('on',t);
+  t?teacher():render();
+}
+window.addEventListener('hashchange',route);
+$('who').addEventListener('change',e=>{who=e.target.value.trim();store('tm_who',who);pick(cur)});
+$('toc').addEventListener('click',e=>{const b=e.target.closest('[data-p]');if(b)pick(P.find(p=>p.id===+b.dataset.p))});
+$('msg').addEventListener('paste',()=>{pasted=true});
+$('msg').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();$('form').requestSubmit()}});
+$('form').addEventListener('submit',e=>{e.preventDefault();const v=$('msg').value.trim();if(!v||busy||!sess||sess.done)return;$('msg').value='';send(v)});
+$('hintBtn').addEventListener('click',()=>{if(sess&&!busy)hint()});
+$('matrix').addEventListener('click',e=>{const b=e.target.closest('[data-s]');if(b){sel=b.dataset.s;teacher()}});
+$('demoBtn').addEventListener('click',demo);
+$('clearBtn').addEventListener('click',e=>{if(e.target.dataset.sure){sessions=[];sel=null;save();e.target.textContent='ล้างข้อมูล';delete e.target.dataset.sure;$('trace').innerHTML='';teacher()}else{e.target.dataset.sure='1';e.target.textContent='กดอีกครั้งเพื่อยืนยัน'}});
+$('csvBtn').addEventListener('click',async e=>{
+  const rows=[['student','problem','done','score','max_hint','ask_answer','pasted','explain']].concat(sessions.map(s=>[s.student,s.pid,s.done,s.done?score(s).n:'',s.maxLvl,s.msgs.filter(m=>m.cat==='ask_answer').length,s.msgs.filter(m=>m.pasted).length,s.explain?s.explain.verdict:'']));
+  const csv='\ufeff'+rows.map(r=>r.map(c=>'"'+String(c).replace(/"/g,'""')+'"').join(',')).join('\n');
+  try{await navigator.clipboard.writeText(csv);e.target.textContent='คัดลอกแล้ว'}catch(_){e.target.textContent='คัดลอกไม่ได้'}
+  setTimeout(()=>e.target.textContent='คัดลอก CSV',1800);
+});
+route();pick(cur);setStatus();
+if(window.claude&&typeof window.claude.use==='function')(async()=>{try{S=await window.claude.use('sample')}catch(e){S=null}setStatus()})();
+}
+</script>
+</body>
+</html>
